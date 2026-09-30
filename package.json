@@ -1,0 +1,26 @@
+{
+  "name": "@ninjapaw/cloud-security-review",
+  "version": "0.2.0",
+  "description": "Read-only, evidence-based Microsoft cloud security assessment.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "sample": "npm run build && node dist/src/cli.js assess --input samples/assessment-input.json --output assessments/sample --allow-incomplete",
+    "assess": "node dist/src/cli.js assess",
+    "diff": "node dist/src/cli.js diff"
+  },
+  "dependencies": {
+    "@azure/identity": "4.13.3",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "~5.9.3"
+  }
+}

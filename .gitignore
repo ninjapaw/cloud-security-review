@@ -1,0 +1,8 @@
+node_modules/
+dist/
+assessments/
+coverage/
+.env
+.env.*
+config.local.json
+*.log
