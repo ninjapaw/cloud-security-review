@@ -8,7 +8,7 @@ jobs:
   verify:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         node: [22, 24]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
@@ -24,3 +24,11 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run sample
+      - run: npm run studio:check
+      - run: npm run studio:build
+      - if: matrix.os == 'ubuntu-latest' && matrix.node == 24
+        run: npx playwright install --with-deps chromium
+      - if: matrix.os != 'ubuntu-latest' && matrix.node == 24
+        run: npx playwright install chromium
+      - if: matrix.node == 24
+        run: npm run studio:test
