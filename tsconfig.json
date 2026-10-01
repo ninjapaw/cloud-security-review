@@ -8,6 +8,8 @@
     "rootDir": ".",
     "outDir": "dist",
     "strict": true,
+    "allowJs": true,
+    "checkJs": true,
     "noEmitOnError": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
@@ -16,5 +18,5 @@
     "declaration": true,
     "sourceMap": true
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts", "scripts/*.mjs"]
 }

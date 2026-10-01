@@ -1,26 +1,41 @@
 {
   "name": "@ninjapaw/cloud-security-review",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Read-only, evidence-based Microsoft cloud security assessment.",
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.12.0"
   },
   "scripts": {
+    "start": "node scripts/start-studio.mjs",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
-    "test": "npm run build && node --test dist/test/*.test.js",
+    "test": "npm run build && node --test dist/test/*.test.js test/local-start.test.mjs",
     "sample": "npm run build && node dist/src/cli.js assess --input samples/assessment-input.json --output assessments/sample --allow-incomplete",
     "assess": "node dist/src/cli.js assess",
-    "diff": "node dist/src/cli.js diff"
+    "diff": "node dist/src/cli.js diff",
+    "studio:dev": "astro dev --root studio --host 127.0.0.1",
+    "studio:check": "astro check --root studio",
+    "studio:build": "astro build --root studio",
+    "studio:preview": "astro preview --root studio --host 127.0.0.1",
+    "studio:test": "playwright test"
   },
   "dependencies": {
     "@azure/identity": "4.13.3",
+    "@noble/hashes": "2.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@astrojs/react": "7.0.0",
+    "@playwright/test": "1.63.0",
     "@types/node": "^24.0.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "astro": "7.3.4",
     "typescript": "~5.9.3"
   }
 }

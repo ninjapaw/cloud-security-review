@@ -68,6 +68,41 @@ Tenant-level SharePoint sharing permission is not proof that any document is
 public; active-role schedules must not be treated as eligible-role assignments
 or counted twice in identity scores.
 
+## Report Studio boundary
+
+`npm start` uses the same Node-based local launcher on Windows, macOS and
+Linux. It builds from this checkout, binds only to `127.0.0.1`, disables Astro
+telemetry for the build/preview process, and stays in the foreground. Host
+overrides and background flags are not accepted. An occupied port is an
+explicit failure, never permission to stop another process. Browser opening
+is delegated to Astro's cross-platform implementation; `--no-open` disables it.
+Dependencies must be installed separately and are never restored automatically.
+This local server is not a public deployment or a tenant collection endpoint.
+
+The Studio is a static Astro/React app, not a tenant collector. Local files are
+parsed and schema-validated in memory. There is no upload endpoint, cloud token
+handling, analytics or automatic local/session storage. Only the deliberately
+fictional demo is prebuilt into the public site. Do not add customer data to
+source/public directories, build outputs, search indexes or deployment bundles.
+
+Treat imported evidence as untrusted text. The app uses the same snapshot
+validation and structural/credential guards as the CLI. HTML and Markdown
+exports escape user text; recipes and analyst notes are strict data, never
+executable templates. Notes belong to one assessment and cannot silently attach
+to another.
+
+Coverage and filter/limit disclosures remain visible even in empty/filtered
+reports. Excluded finding bodies and raw inventory must be omitted from output,
+not merely hidden in the DOM. Filters are not a privacy/redaction guarantee:
+source identifiers, selected findings and notes may still identify customers.
+Review actual export bytes before sharing them.
+
+Astro's build-time CSP hashes protect application scripts. The preview iframe
+has printing and same-origin access but no script permission; exported reports
+have no JavaScript or remote resources. The browser app does need JavaScript.
+Use a trusted host/browser and consider extension access and downloaded-file
+retention. No report or recipe is signed or encrypted by this feature.
+
 ## Reporting a vulnerability
 
 Contact the repository maintainers through a private channel or GitHub private

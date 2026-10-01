@@ -10,7 +10,7 @@ import { DEFAULT_POLICY } from './policy.js';
 import { AssessmentError, collectionKey, stableId } from './safety.js';
 import { parseInput, parsePolicy, parseSnapshot } from './validation.js';
 
-export const TOOL_VERSION = '0.2.0';
+export const TOOL_VERSION = '0.3.0';
 const correlationInputs = new Set([
   'entra.applications', 'entra.servicePrincipals', 'entra.federatedCredentials',
   'azure.roleAssignments', 'azure.roleDefinitions', 'github.repositories',

@@ -11,6 +11,131 @@ working collectors and checks, **not every control in every Microsoft product**.
 Unsupported capabilities, inaccessible APIs, missing licensing evidence and
 incomplete inventories remain visible as **Unable to Assess**.
 
+## Report Studio (version 0.3)
+
+A small **Astro + React** workspace turns an existing assessment into
+audience-specific reports. No backend, tenant sign-in, Starlight, drag-and-drop
+library or database is required.
+
+```powershell
+npm ci --include=dev --ignore-scripts
+npm start
+```
+
+`npm start` builds the current checkout, serves it only on
+`http://127.0.0.1:4321`, and opens your default browser. Keep the terminal
+open; **Ctrl+C** stops the server. Node.js **22.12+** and npm must already be
+installed; **Node 24 LTS** is recommended. No administrator rights, Docker,
+Azure CLI, GitHub CLI, or tenant sign-in are needed for Report Studio.
+
+Select **Try fictional demo**, or
+open a CLI-generated `assessment.json` snapshot (up to 50 MiB). Raw
+`assessment-input.json` collection fixtures are not report snapshots.
+
+### Run on Windows, macOS or Linux
+
+Run the two commands above from the project directory on any supported OS.
+Install dependencies once per checkout/machine, and again after dependency
+updates. Keep development dependencies: Astro is a local build tool.
+
+| Platform | Optional local shortcut after setup |
+| --- | --- |
+| Windows | Double-click [Report Studio.cmd](Report%20Studio.cmd), or run it from PowerShell |
+| macOS | In Terminal, run `sh ./report-studio.sh` |
+| Linux | In a terminal, run `sh ./report-studio.sh` |
+
+The Windows and POSIX shortcuts call the same Node launcher and work even when
+the current working directory is elsewhere. Quote paths containing spaces.
+The POSIX script needs no executable-bit change when invoked with `sh`.
+macOS and Linux use the Node installation on the terminal's `PATH`; if Node
+was just installed, open a new terminal. Install native dependencies on each
+OS rather than copying `node_modules` from another machine or architecture.
+
+Common options, identical on all platforms:
+
+```text
+npm start -- --no-open
+npm start -- --port 4330
+npm start -- --no-build --no-open
+npm start -- --help
+```
+
+`--no-open` is useful for headless/remote terminals; the local URL is always
+printed. Linux desktop browser opening uses the system's browser opener; if
+one is unavailable, open the printed URL manually. `--port 0` chooses an
+available loopback port. A busy explicit port fails with instructions instead
+of killing another process or silently switching ports.
+
+The default rebuild avoids serving stale code. `--no-build` serves an existing
+`studio/dist` only and requires a prior successful build. The launcher never
+installs software automatically or requests cloud access, and it disables
+Astro build/preview telemetry for its process. It stays in the foreground on
+every OS. After first-time dependency setup, normal local startup does not
+need internet access.
+
+For live development with hot reload, `npm run studio:dev` remains available.
+The local launcher is for your workstation, not a public or production server;
+it deliberately rejects host overrides. This project is not a packaged native
+desktop installer.
+
+1. Choose **Executive**, **Technical**, or **Code to cloud**.
+2. Set the title, domains, severities, finding status/scope and finding limit.
+3. Include and reorder recommendations, detailed findings and analyst notes.
+4. Preview the report, then download **HTML** or **Markdown**, or use
+   **Print / Save as PDF**. PDF saving is provided by the browser print dialog.
+5. Save a **recipe** to reuse the presentation. Save analyst notes separately
+   if needed; they are tied to the source assessment identifier.
+
+Every report retains assessment identity/date, original source counts,
+filter/limit/section disclosures, and an unfiltered source coverage summary.
+These cannot be removed by a recipe. Excluded finding bodies and raw
+inventories are not hidden inside the exported HTML. Filters are **not**
+automatic de-identification: selected descriptions, evidence references,
+source identifiers and notes can still be sensitive. Review exports before
+sharing.
+
+Files are validated and processed in browser memory. Reloading or **Clear
+data** clears the assessment and notes; nothing is uploaded or automatically
+written to browser storage. Loading the demo requests only the packaged
+fictional snapshot from the same site. Use a trusted browser and host:
+extensions and other software with access to that browser can still inspect
+its memory.
+
+Recipes and notes use separate, strict JSON schemas. They cannot execute
+JavaScript, HTML or MDX, change finding severity, or alter risk policy.
+Applying a preset does not erase notes; loading a different snapshot does.
+A saved scope absent from a new assessment is an explicit error, not a
+silent fallback to all scopes.
+
+### Reuse a recipe from the CLI
+
+The browser and CLI share the same selection and rendering functions:
+
+```powershell
+npm run build
+node dist\src\cli.js report --snapshot assessments\review-001\assessment.json --recipe report-recipe.json --output assessments\executive-report
+node dist\src\cli.js report --snapshot assessments\review-001\assessment.json --recipe report-recipe.json --notes analyst-notes.json --output assessments\annotated-report
+```
+
+`report` performs no collection or reassessment. It writes `report.html`,
+`report.md` and the applied `report-recipe.json` into a **new** directory.
+It never copies the raw snapshot or the separate notes file. Notes appear
+in the report only when their section is enabled. Exit 0 means rendering
+succeeded, not that the source is secure; source coverage gaps stay visible.
+
+For a production static build:
+
+```powershell
+npm run studio:check
+npm run studio:build
+npm run studio:preview
+```
+
+Only the app and the deliberately fictional demo go into `studio/dist`.
+Never put customer snapshots or notes into the Studio source/public folders.
+Starlight documentation, charts, live collection and account management are
+deliberately outside this first version.
+
 ## Version 0.2 additions
 
 - SharePoint/OneDrive tenant settings: legacy authentication, the sharing
@@ -48,8 +173,8 @@ See [security boundaries](SECURITY.md) and [coverage and limitations](docs/COVER
 
 ## Quick start: no cloud account required
 
-Requirements: Node.js **22 or newer** and npm. The Azure Identity SDK requires
-Node 22+. The lockfile pins the installed dependency graph.
+Requirements: Node.js **22.12 or newer** and npm. Astro requires this minimum.
+The lockfile pins the installed dependency graph.
 
 ```powershell
 npm ci --ignore-scripts
@@ -144,6 +269,7 @@ Related documentation:
 assess --input FILE --output NEW_DIRECTORY [--policy FILE] [--previous FILE]
 assess --config FILE --output NEW_DIRECTORY [--policy FILE] [--previous FILE]
 diff --previous FILE --current FILE --output NEW_DIRECTORY
+report --snapshot FILE --recipe FILE --output NEW_DIRECTORY [--notes FILE]
 validate --config FILE
 validate --input FILE
 catalog
@@ -267,7 +393,8 @@ values are not duplicated into the change report.
 | --- | --- |
 | `assessment.json` | Versioned, validated inventory, findings, relationship graph, score factors, scope and coverage |
 | `report.md` | Grouped recommendations, evidence-gap steps, per-repository coverage, findings and evidence references |
-| `report.html` | Standalone escaped report with section navigation, expandable target lists, accessible gap tables and no JavaScript, remote assets, telemetry or uploads |
+| `report.html` | Standalone escaped report with no JavaScript, remote assets, telemetry or uploads; Studio recipes select its optional sections |
+| `report-recipe.json` | Reusable presentation settings, not evidence or analyst notes |
 | `changes.json` / `changes.md` | Optional snapshot differences and finding transitions |
 
 Reports contain **sensitive tenant metadata**, even without credentials. Store
@@ -275,7 +402,8 @@ them in a restricted location with encryption and a retention policy suitable
 for the engagement. They are not encrypted or cryptographically signed by
 this tool. POSIX output modes are restrictive; on Windows, enforce suitable
 NTFS ACLs on the destination. Git ignores the default report directory, local
-configuration and environment files. Do not publish assessment reports or use
+configuration and environment files. Default Studio download filenames are
+also ignored if saved inside the checkout. Do not publish assessment reports or use
 customer metadata as public test fixtures.
 
 ## Development
@@ -287,8 +415,23 @@ not implemented or cannot be concluded from the initial checks.
 ```powershell
 npm run typecheck
 npm test
+npm run studio:check
+npm run studio:build
+npx playwright install chromium
+npm run studio:test
 ```
 
+Browser tests verify local imports, real downloads, recipe/notes round trips,
+validation failures, the exact upload-size limit, print invocation, native PDF output and mobile
+layout. To use an existing Windows Edge installation instead of downloading
+Chromium, set `$env:PLAYWRIGHT_CHANNEL = 'msedge'` before `npm run studio:test`.
+The browser tests start the same local launcher with
+`--no-build --no-open --port 4331` in the foreground, independently of an
+operator's preview server, and stop it afterward.
+
 Tests use fixtures and injected HTTP/token providers, never live customer
-tenants. CI covers Node 22/24 on Windows and Linux, uses pinned actions, has only
-repository-read permission and does not upload assessment artifacts.
+tenants. The CI matrix covers Node 22/24 on Windows, macOS and Linux, uses pinned actions, has only
+repository-read permission and does not upload assessment artifacts. Studio
+typecheck/build and launcher/shortcut tests run on the matrix; browser tests
+run on Node 24 on all three operating systems. Native macOS/Linux verification
+is performed by those runners, not emulated by the Windows developer shell.

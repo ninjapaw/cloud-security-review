@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url';
 import test, { type TestContext } from 'node:test';
 import { MAX_JSON_BYTES, readJson, writeBundle } from '../src/storage.js';
 import { parseSnapshot } from '../src/validation.js';
-import { collection, input, snapshot } from './support.js';
+import { emptyNotes, presetRecipe } from '../src/report-recipe.js';
+import { collection, finding, input, snapshot } from './support.js';
 
 const cli = fileURLToPath(new URL('../src/cli.js', import.meta.url));
 const sample = fileURLToPath(new URL('../../samples/assessment-input.json', import.meta.url));
@@ -142,4 +143,51 @@ test('oversized JSON output is refused before a report directory is created', as
     'assessment.json': ' '.repeat(MAX_JSON_BYTES + 1),
   }), /snapshot limit/);
   assert.deepEqual(await readdir(root), []);
+});
+
+test('saved Studio recipes produce minimized CLI reports without copying or mutating the snapshot', async t => {
+  const root = await directory(t);
+  const source = snapshot([collection()], [
+    finding({ id: 'selected', title: 'SELECTED-PRIORITY' }),
+    finding({ id: 'excluded', title: 'EXCLUDED-FROM-EXPORT', severity: 'low' }),
+  ]);
+  const sourceFile = join(root, 'snapshot.json');
+  const recipeFile = join(root, 'recipe.json');
+  const notesFile = join(root, 'notes.json');
+  const output = join(root, 'configured');
+  const bytes = JSON.stringify(source);
+  await writeFile(sourceFile, bytes);
+  await writeFile(recipeFile, JSON.stringify(presetRecipe('executive')));
+  await writeFile(notesFile, JSON.stringify({ ...emptyNotes(source.assessmentId), text: 'Separate analyst commentary.' }));
+  const result = run('report', '--snapshot', sourceFile, '--recipe', recipeFile, '--notes', notesFile, '--output', output);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual((await readdir(output)).sort(), ['report-recipe.json', 'report.html', 'report.md']);
+  assert.equal(await readFile(sourceFile, 'utf8'), bytes);
+  for (const name of ['report.html', 'report.md']) {
+    const report = await readFile(join(output, name), 'utf8');
+    assert.ok(report.includes('SELECTED-PRIORITY'));
+    assert.ok(report.includes('Separate analyst commentary.'));
+    assert.ok(!report.includes('EXCLUDED-FROM-EXPORT'));
+    assert.ok(report.includes('1 excluded by filters'));
+  }
+  assert.ok(!(await readFile(join(output, 'report-recipe.json'), 'utf8')).includes('Separate analyst commentary.'));
+  assert.equal(run('report', '--snapshot', sourceFile, '--recipe', recipeFile, '--output', output).status, 1);
+});
+
+test('CLI report refuses mismatched notes or executable recipe fields before writing output', async t => {
+  const root = await directory(t);
+  const source = snapshot();
+  const sourceFile = join(root, 'snapshot.json');
+  const recipeFile = join(root, 'recipe.json');
+  const notesFile = join(root, 'notes.json');
+  await writeFile(sourceFile, JSON.stringify(source));
+  await writeFile(recipeFile, JSON.stringify(presetRecipe('technical')));
+  await writeFile(notesFile, JSON.stringify(emptyNotes('another-assessment')));
+  assert.equal(run('report', '--snapshot', sourceFile, '--recipe', recipeFile, '--notes', notesFile, '--output', join(root, 'mismatch')).status, 1);
+  await writeFile(recipeFile, JSON.stringify({ ...presetRecipe('technical'), script: 'UNTRUSTED-SENTINEL' }));
+  const failed = run('report', '--snapshot', sourceFile, '--recipe', recipeFile, '--output', join(root, 'unsafe'));
+  assert.equal(failed.status, 1);
+  assert.ok(!failed.stderr.includes('UNTRUSTED-SENTINEL'));
+  assert.ok(!(await readdir(root)).includes('mismatch'));
+  assert.ok(!(await readdir(root)).includes('unsafe'));
 });

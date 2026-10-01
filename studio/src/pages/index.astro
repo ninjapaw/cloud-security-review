@@ -1,0 +1,42 @@
+---
+import ReportStudio from '../components/ReportStudio';
+import '../styles/studio.css';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="description" content="Compose evidence-based security reports locally from existing assessment snapshots." />
+    <title>Report Studio | Cloud Security Review</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#studio">Skip to Report Studio</a>
+    <header class="masthead">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">CS</span>
+        <div><strong>Cloud Security Review</strong><span>Report Studio</span></div>
+      </div>
+      <span class="local-badge"><span aria-hidden="true"></span>Local-first &middot; read-only</span>
+    </header>
+    <main id="studio">
+      <div class="intro">
+        <p class="eyebrow">Collect once. Tell the right story.</p>
+        <h1>One assessment.<br /><span>Your report.</span></h1>
+        <p>Choose an audience, focus the evidence, and export a report. Your source findings stay unchanged.</p>
+      </div>
+      <ReportStudio client:only="react" demoUrl={`${import.meta.env.BASE_URL}demo.json`}>
+        <p slot="fallback" role="status">Starting the local report workspace...</p>
+      </ReportStudio>
+      <noscript>
+        <p class="notice">Report Studio needs JavaScript to process files locally. The assessment CLI and exported HTML reports do not need this workspace.</p>
+      </noscript>
+    </main>
+    <footer class="site-footer">
+      No cloud sign-in, uploads, analytics, or automatic browser storage. Only the fictional demo is shipped with this site.
+      <br />Keep your assessment files and exports private. Reloading clears the workspace.
+    </footer>
+  </body>
+</html>

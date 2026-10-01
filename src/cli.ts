@@ -6,6 +6,7 @@ import { SEVERITIES } from './model.js';
 import type { AssessmentSnapshot, Severity } from './model.js';
 import { DEFAULT_POLICY } from './policy.js';
 import { assessmentSummary, renderDiffMarkdown, renderHtml, renderMarkdown } from './report.js';
+import { buildReportView, parseNotes, parseRecipe, renderRecipeHtml, renderRecipeMarkdown } from './report-recipe.js';
 import { AssessmentError } from './safety.js';
 import { readJson, writeBundle } from './storage.js';
 import { parseInput, parsePolicy, parseSnapshot } from './validation.js';
@@ -16,6 +17,7 @@ Commands:
   assess --input FILE --output NEW_DIRECTORY [--policy FILE] [--previous FILE]
   assess --config FILE --output NEW_DIRECTORY [--policy FILE] [--previous FILE]
   diff --previous FILE --current FILE --output NEW_DIRECTORY
+  report --snapshot FILE --recipe FILE --output NEW_DIRECTORY [--notes FILE]
   validate --config FILE
   validate --input FILE
   catalog
@@ -27,6 +29,7 @@ Assessment options:
 
 --input is offline and accepts schema 1.0 assessment input. --config explicitly
 requests live reads in the approved scope using existing credentials.
+report renders an existing snapshot without collecting, rescoring, or modifying evidence.
 No tenant configuration changes, secret retrieval, remediation, or uploads.
 
 Exit codes: 0 report/command completed; 1 invalid input or operational failure;
@@ -104,6 +107,22 @@ async function main(argv: string[]): Promise<number> {
       'changes.md': renderDiffMarkdown(diff),
     });
     process.stdout.write(`Comparison saved to ${JSON.stringify(output)}. ${diff.changes.length} observed changes.\n`);
+    return 0;
+  }
+  if (command === 'report') {
+    const parsed = options(args, ['--snapshot', '--recipe', '--notes', '--output']);
+    const outputPath = required(parsed, '--output');
+    const snapshot = parseSnapshot(await readJson(required(parsed, '--snapshot')));
+    const recipe = parseRecipe(await readJson(required(parsed, '--recipe')));
+    const notesPath = parsed.get('--notes');
+    const notes = notesPath ? parseNotes(await readJson(notesPath), snapshot.assessmentId) : undefined;
+    const view = buildReportView(snapshot, recipe, notes);
+    const output = await writeBundle(outputPath, {
+      'report.html': renderRecipeHtml(view),
+      'report.md': renderRecipeMarkdown(view),
+      'report-recipe.json': `${JSON.stringify(recipe, null, 2)}\n`,
+    });
+    process.stdout.write(`Configured report saved to ${JSON.stringify(output)}.\n${view.shownCount} findings selected; ${view.excludedCount} excluded by filters; ${view.limitedCount} omitted by the limit. ${view.source.totals.incompleteCollections} source collection gaps retained. No evidence was changed and no raw snapshot was copied.\n`);
     return 0;
   }
   if (command !== 'assess') {

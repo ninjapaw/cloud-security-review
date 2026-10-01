@@ -1,4 +1,5 @@
-import { createHash } from 'node:crypto';
+import { sha256 } from '@noble/hashes/sha2.js';
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import type { JsonObject, JsonValue } from './model.js';
 
 export class AssessmentError extends Error {
@@ -67,7 +68,7 @@ export function canonicalJson(value: unknown): string {
 }
 
 export function stableId(...parts: string[]): string {
-  return createHash('sha256').update(JSON.stringify(parts)).digest('hex').slice(0, 24);
+  return bytesToHex(sha256(utf8ToBytes(JSON.stringify(parts)))).slice(0, 24);
 }
 
 export function recordId(record: JsonObject): string {

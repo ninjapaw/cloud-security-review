@@ -11,6 +11,14 @@ strict configuration / validated offline evidence
   -> same-scope snapshot comparison
 ```
 
+Report Studio adds a separate presentation path:
+
+```text
+validated snapshot + strict report recipe + optional separate analyst notes
+  -> browser-safe report view (filtered findings, no raw inventory)
+  -> React preview / script-free HTML / Markdown / browser print
+```
+
 There is no remediation subsystem, hosted backend, account-registration flow,
 shell-command endpoint, secret store or automatic consent process.
 
@@ -132,3 +140,41 @@ across collector versions remain deliberately conservative.
 Tests, source files and local reports are kept separate. The CLI supports
 offline fixtures to reproduce analysis without credentials or a customer
 environment.
+
+## Report Studio
+
+[start-studio.mjs](../scripts/start-studio.mjs) is the common Windows/macOS/Linux
+local entrypoint behind `npm start` and the two thin platform shortcuts. It
+resolves the checkout from its own file location, checks the Node minimum and
+dependencies, rebuilds by default, checks the chosen loopback port, and uses the
+pinned Astro build/preview API. It does not introduce another web server or
+duplicate platform browser-opening logic. Using the API avoids CLI agent
+auto-background behavior. SIGINT/SIGTERM (and Windows SIGBREAK) stop its own
+server; missing prerequisites, failed builds and occupied ports are explicit
+errors. `--no-build` is an opt-in shortcut for an existing static build.
+
+[report-recipe.ts](../src/report-recipe.ts) defines the declarative recipe and
+notes contracts, presets, view selection and export renderers. The browser and
+CLI `report` command use these same functions. A recipe has schema version,
+title, domain/severity/status/scope filters, a 1-500 finding cap, optional section
+order and an evidence-reference switch. It contains no executable template.
+Notes are plain text, bound to an assessment ID, and stored separately.
+
+The view copies selected finding/evidence structures rather than modifying the
+source. It retains unfiltered source counts and coverage even if every optional
+section is disabled or every finding is filtered out. Grouped recommendations
+come from the selected findings only. Raw inventories and graph datasets are
+not included in the view or export. Assessment/risk policy is never rerun.
+
+[studio/](../studio/) is a static Astro app with one client-only React workspace,
+so interactive controls do not appear before their event handlers are ready. It uses
+the existing runtime snapshot validator. Portable SHA-256 preserves existing
+identifiers without importing Node crypto or cloud credentials into the browser.
+The static demo endpoint executes the assessment engine **at build time** on
+the committed fictional fixture only; it is not a runtime assessment API.
+
+The app has no upload endpoint, automatic persistence, service worker or cloud
+sign-in. Astro emits a script-hash CSP; inline styles are permitted for the
+generated report preview. The preview iframe permits same-origin access and
+printing, but not scripts. Exported HTML keeps a stricter no-script,
+no-remote-resource policy and includes its print styles.

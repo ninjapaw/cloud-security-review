@@ -17,6 +17,8 @@ function markdown(value: unknown): string {
     .replace(/([|`*_[\]#])/g, '\\$1').replace(/[\r\n]+/g, ' ');
 }
 
+export { markdown as escapeMarkdown };
+
 function get(object: JsonObject, ...path: string[]): JsonValue | undefined {
   let value: JsonValue | undefined = object;
   for (const key of path) {

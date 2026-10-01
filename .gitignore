@@ -6,3 +6,10 @@ coverage/
 .env.*
 config.local.json
 *.log
+.astro/
+report-recipe.json
+analyst-notes.json
+security-report.html
+security-report.md
+test-results/
+playwright-report/
