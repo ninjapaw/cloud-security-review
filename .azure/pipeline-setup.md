@@ -16,12 +16,12 @@ provision a site or deploy assessment outputs.
    deployment authorization policy. Do not connect the site to GitHub using
    the Azure portal's generated workflow: that would create a second,
    unreviewed deployment path.
-2. In the repository's **Settings > Environments**, create `demo`. Restrict
-   deployments to `dev` and configure required reviewers. Make sure the
+2. In the repository's **Settings > Environments > demo**, configure required
+   reviewers. The environment already exists and restricts deployments to
+   `dev`, but **reviewer protection is not yet configured**. Make sure the
    reviewers are not the person who triggers the workflow, where possible.
-   Do not add a deployment token before this protection is in place. The
-   environment does not currently exist; merely naming it in workflow YAML
-   does not enforce reviews.
+   Do not add a deployment token before this protection is in place. Merely
+   naming an environment in workflow YAML does not enforce reviews.
 3. Get that site's deployment token from its Azure Static Web Apps deployment
    settings. Store it as an **environment secret** named
    `AZURE_STATIC_WEB_APPS_API_TOKEN` in `demo`, not as a repository secret.

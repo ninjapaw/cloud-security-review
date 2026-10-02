@@ -55,7 +55,9 @@ app and fictional demo; run Azure validation and then deploy.
 - `npm run studio:test`: 6 passed locally after installing the missing Playwright browser.
 - `npm run sample`: passed using the fictional fixture; output is ignored and must never be published.
 - Latest observed remote `dev` CI has a macOS Node 22/24 failure in the launcher test; the local fix is not yet verified in CI.
-- No matching existing Static Web App was found. A manual, gated deployment workflow has been prepared, but no site or deployment secret is configured.
+- No matching existing Static Web App was found. A manual deployment workflow
+  and branch-restricted `demo` environment exist, but required reviewers, a
+  site and deployment token are not configured.
 
 **Validation proof for Azure deployment:** Pending approval, infrastructure and preflight checks.
 No Azure resources were created or changed.
