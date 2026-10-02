@@ -1,11 +1,11 @@
 # Azure deployment plan
 
-> **Status:** Validated; infrastructure provisioned, application deployment pending
+> **Status:** Deployed
 
 ## 1. Project overview
 
 **Goal:** Build, review and publish the Report Studio for `ninjapaw/cloud-security-review` from `dev`.
-**Path:** Add hosting to an existing project. The site is provisioned; application deployment is pending.
+**Path:** Add hosting to an existing project. The public fictional demo is deployed.
 
 ## 2. Requirements and decisions
 
@@ -119,4 +119,22 @@ Web App. `az staticwebapp show` confirmed its SKU, location, HTTPS hostname
 and absent `repositoryUrl`; the resource group contains only the site.
 The site-scoped deployment token was stored (not printed) as the `demo`
 environment secret `AZURE_STATIC_WEB_APPS_API_TOKEN`; `gh secret list --env demo`
-confirmed its name. Application deployment and live endpoint checks are pending.
+confirmed its name.
+
+## 8. Deployment Verification
+
+- Commit `9b3622b6281d255b1ffff6f5686c84e9ba3ad0f9` passed
+  [cross-platform CI](https://github.com/ninjapaw/cloud-security-review/actions/runs/36968188530)
+  and [CodeQL](https://github.com/ninjapaw/cloud-security-review/actions/runs/36968188314).
+  [Manual deployment](https://github.com/ninjapaw/cloud-security-review/actions/runs/36968325614)
+  passed both verify and deploy jobs after `demo` reviewer approval.
+- [The live home page](https://proud-smoke-0a7ba5910.5.azurestaticapps.net/)
+  returned HTTP 200 and Report Studio content.
+  [The live fictional demo](https://proud-smoke-0a7ba5910.5.azurestaticapps.net/demo.json)
+  returned `assessmentId: fictional-report-studio-demo`.
+  `/security-report.html`, `/security-report.md`, `/analyst-notes.json`,
+  `/report-recipe.json` and `/assessments/` all returned HTTP 404.
+- Azure reports the site as Free in Central US. The token-based deploy
+  populated repository metadata with this repository and `dev`. GitHub still
+  lists only CI, CodeQL and the reviewed manual deployment workflow; no
+  generated workflow or repository-wide deployment secret was added.

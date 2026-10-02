@@ -26,11 +26,17 @@ if ($exists -eq 'false') {
 }
 
 $site = az staticwebapp list --resource-group $ResourceGroup --subscription $SubscriptionId `
-  --query "[?name=='$SiteName'].{name:name,sku:sku.name,location:location,repositoryUrl:repositoryUrl,defaultHostname:defaultHostname}" -o json | ConvertFrom-Json
+  --query "[?name=='$SiteName'].{name:name,sku:sku.name,location:location,repositoryUrl:repositoryUrl,branch:branch,provider:provider,defaultHostname:defaultHostname}" -o json | ConvertFrom-Json
 if ($LASTEXITCODE -ne 0) { throw 'Unable to check the target Static Web App.' }
 if ($site) {
-  if ($site.sku -ne 'Free' -or $site.location -ne 'Central US' -or $site.repositoryUrl) {
-    throw 'The existing site does not match the approved free, unconnected deployment.'
+  $expectedRepository = 'https://github.com/ninjapaw/cloud-security-review'
+  $unexpectedSource = $site.repositoryUrl -and (
+    $site.repositoryUrl -ne $expectedRepository -or
+    $site.branch -ne 'dev' -or
+    $site.provider -ne 'GitHub'
+  )
+  if ($site.sku -ne 'Free' -or $site.location -ne 'Central US' -or $unexpectedSource) {
+    throw 'The existing site does not match the approved Free deployment and repository.'
   }
   Write-Output "Existing approved site: https://$($site.defaultHostname)"
 } else {

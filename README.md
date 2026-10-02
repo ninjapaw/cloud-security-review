@@ -137,11 +137,11 @@ Starlight documentation, charts, live collection and account management are
 deliberately outside this first version.
 
 CI and GitHub CodeQL cover build, tests and static analysis. The separate
-manual [fictional Studio deployment](.azure/pipeline-setup.md) is prepared
-for an approved Azure Static Web App, but cannot deploy until a protected
-GitHub environment and site-scoped token are configured. It verifies the
-public asset inventory before publication; tenant assessments are never
-deployment inputs.
+manual [fictional Studio deployment](.azure/pipeline-setup.md) publishes the
+approved public demo to
+[Azure Static Web Apps](https://proud-smoke-0a7ba5910.5.azurestaticapps.net/)
+only after CI, CodeQL, public asset verification and `demo` environment
+approval. Tenant assessments are never deployment inputs.
 
 ## Version 0.2 additions
 

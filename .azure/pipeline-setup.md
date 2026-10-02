@@ -18,7 +18,9 @@ provision a site or deploy assessment outputs.
    https://proud-smoke-0a7ba5910.5.azurestaticapps.net.
    Do not connect the site to GitHub using
    the Azure portal's generated workflow: that would create a second,
-   unreviewed deployment path.
+   unreviewed deployment path. The first token-based deployment populated
+   the site's repository metadata with this repository and `dev`; it did not
+   generate another workflow.
 2. The repository's **Settings > Environments > demo** environment requires
    review by `billmcilhargey` and restricts deployments to `dev`. Self-review
    is permitted because no independent write-access reviewer is available.
