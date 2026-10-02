@@ -1,7 +1,7 @@
-import { access } from 'node:fs/promises';
+import { access, realpath } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { resolve } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 export const STUDIO_ROOT = fileURLToPath(new URL('../studio/', import.meta.url));
 export const DEFAULT_PORT = 4321;
@@ -166,7 +166,7 @@ async function main() {
   }
 }
 
-if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
+if (process.argv[1] && await realpath(process.argv[1]) === await realpath(fileURLToPath(import.meta.url))) {
   try {
     await main();
   } catch (error) {
