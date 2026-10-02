@@ -54,7 +54,8 @@ app and fictional demo; run Azure validation and then deploy.
 - `npm test`: 256 passed locally, including the previously failing missing-dependency launcher test.
 - `npm run studio:test`: 6 passed locally after installing the missing Playwright browser.
 - `npm run sample`: passed using the fictional fixture; output is ignored and must never be published.
-- Latest observed remote `dev` CI has a macOS Node 22/24 failure in the launcher test; the local fix is not yet verified in CI.
+- Remote `dev` CI and CodeQL passed on `ca3bfe9` after fixing the
+  macOS launcher test; no deployment was attempted.
 - No matching existing Static Web App was found. A manual deployment workflow
   and branch-restricted `demo` environment exist, but required reviewers, a
   site and deployment token are not configured.
