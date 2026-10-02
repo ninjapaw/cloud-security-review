@@ -127,10 +127,11 @@ async function main() {
   process.env.ASTRO_TELEMETRY_DISABLED = '1';
   let astro;
   try {
+    await access(new URL('../node_modules/astro/package.json', import.meta.url));
     astro = await import('astro');
   } catch (error) {
     if (error instanceof Error && 'code' in error
-      && ['ERR_MODULE_NOT_FOUND', 'MODULE_NOT_FOUND'].includes(String(error.code))) {
+      && ['ENOENT', 'ERR_MODULE_NOT_FOUND', 'MODULE_NOT_FOUND'].includes(String(error.code))) {
       throw new Error('Studio dependencies are missing or incomplete. In this checkout, run npm ci --include=dev --ignore-scripts, then npm start. Dependencies are not installed automatically.');
     }
     throw error;

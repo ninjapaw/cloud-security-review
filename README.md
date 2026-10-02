@@ -136,6 +136,13 @@ Never put customer snapshots or notes into the Studio source/public folders.
 Starlight documentation, charts, live collection and account management are
 deliberately outside this first version.
 
+CI and GitHub CodeQL cover build, tests and static analysis. The separate
+manual [fictional Studio deployment](.azure/pipeline-setup.md) is prepared
+for an approved Azure Static Web App, but cannot deploy until a protected
+GitHub environment and site-scoped token are configured. It verifies the
+public asset inventory before publication; tenant assessments are never
+deployment inputs.
+
 ## Version 0.2 additions
 
 - SharePoint/OneDrive tenant settings: legacy authentication, the sharing

@@ -1,0 +1,82 @@
+name: Deploy fictional Report Studio
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: fictional-studio-demo
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Require the dev branch
+        run: test "$GITHUB_REF" = refs/heads/dev
+      - name: Require successful CI and CodeQL on this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for workflow in ci.yml CodeQL; do
+            result=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "$workflow" \
+              --commit "$GITHUB_SHA" --limit 20 --json conclusion \
+              --jq 'any(.[]; .conclusion == "success")')
+            if [ "$result" != true ]; then
+              echo "::error::No successful $workflow run exists for $GITHUB_SHA"
+              exit 1
+            fi
+          done
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run studio:check
+      - run: npm run studio:build
+      - run: node tools/check-studio-artifact.mjs
+      - run: npx playwright install --with-deps chromium
+      - run: npm run studio:test
+      - run: node tools/check-studio-artifact.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: fictional-studio
+          path: studio/dist/
+          if-no-files-found: error
+          retention-days: 1
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: demo
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: fictional-studio
+          path: studio/dist
+      - name: Require deployment token
+        env:
+          DEPLOY_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+        run: test -n "$DEPLOY_TOKEN"
+      - name: Publish verified static assets
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: upload
+          app_location: studio/dist
+          api_location: ''
+          output_location: ''
+          skip_app_build: true
