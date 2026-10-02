@@ -11,19 +11,20 @@ provision a site or deploy assessment outputs.
 
 ## Before the first deployment
 
-1. Approve a public **fictional-demo-only** Azure Static Web App, its
-   subscription, region and cost. Provision it separately and review its
-   deployment authorization policy. Do not connect the site to GitHub using
+1. The public **fictional-demo-only** Azure Static Web App, DevOps
+   subscription, Central US region and Free tier are approved. The Free
+   site `np-cloudsecurityreview-demo-centralus` is provisioned through
+   `infra/provision.ps1` at
+   https://proud-smoke-0a7ba5910.5.azurestaticapps.net.
+   Do not connect the site to GitHub using
    the Azure portal's generated workflow: that would create a second,
    unreviewed deployment path.
-2. In the repository's **Settings > Environments > demo**, configure required
-   reviewers. The environment already exists and restricts deployments to
-   `dev`, but **reviewer protection is not yet configured**. Make sure the
-   reviewers are not the person who triggers the workflow, where possible.
-   Do not add a deployment token before this protection is in place. Merely
-   naming an environment in workflow YAML does not enforce reviews.
-3. Get that site's deployment token from its Azure Static Web Apps deployment
-   settings. Store it as an **environment secret** named
+2. The repository's **Settings > Environments > demo** environment requires
+   review by `billmcilhargey` and restricts deployments to `dev`. Self-review
+   is permitted because no independent write-access reviewer is available.
+   Do not remove this protection. Merely naming an environment in workflow
+   YAML does not enforce reviews.
+3. The site's deployment token is stored as an **environment secret** named
    `AZURE_STATIC_WEB_APPS_API_TOKEN` in `demo`, not as a repository secret.
    Do not print or commit the token. The workflow fails explicitly if it is
    missing. Rotate it if compromised or when the deployment site changes.
@@ -42,5 +43,5 @@ unexpected files and ensures the bundled demo matches the checked-in
 fictional fixture. Only the explicitly verified directory is transferred
 between jobs and published. A future CI refactor must preserve these gates.
 
-Deployment is not automatic on push or pull request. Do not activate the
-workflow until the site, environment protections and token are reviewed.
+Deployment is not automatic on push or pull request. Preserve the site,
+environment protection and token boundary for future deployments.
